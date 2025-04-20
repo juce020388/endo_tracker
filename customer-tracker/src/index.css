@@ -1,0 +1,211 @@
+@import 'tailwindcss';
+
+:root {
+  /* Palette from palette.md */
+  --color-bg-main: #F2EFE7;
+  --color-bg-form: #fff;
+  --color-border: #D1DFE1;
+  --color-link: #007F87;
+  --color-link-visited: #48A6A7;
+  --color-link-active: #48A6A7;
+  --color-accent: #48A6A7;
+  --color-accent-dark: #006A71;
+  --color-divider: #D1DFE1;
+  --color-success: #48A6A7;
+  --color-success-bg: #E3F1F2;
+  --color-error: #C25450;
+  --color-error-bg: #F9E9E8;
+  --color-warning: #E2A534;
+  --color-warning-bg: #FCF6E9;
+  --color-info: #437ABF;
+  --color-info-bg: #EBF2FA;
+  --color-label: #4F6366;
+  --color-text-main: #213547;
+  --color-input-focus: #48A6A7;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: var(--color-text-main);
+  background-color: var(--color-bg-main);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+a {
+  font-weight: 500;
+  color: var(--color-link);
+  text-decoration: inherit;
+  transition: color 0.2s;
+}
+a:visited {
+  color: var(--color-link-visited);
+}
+a:hover, a:focus {
+  color: var(--color-link-active);
+}
+a:active {
+  color: var(--color-link-active);
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  background: var(--color-bg-main);
+  color: var(--color-text-main);
+}
+
+#root {
+  width: 100vw;
+  max-width: 100vw;
+  padding: 1rem;
+}
+
+@media (max-width: 640px) {
+  #root {
+    padding: 0.5rem;
+  }
+  table {
+    font-size: 0.85rem;
+  }
+  th, td {
+    padding: 0.25rem 0.5rem;
+  }
+  .flex, .flex-wrap, .gap-4 {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+  .mb-6 {
+    margin-bottom: 1rem !important;
+  }
+  .text-xl {
+    font-size: 1.25rem !important;
+  }
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--color-accent);
+  color: #fff;
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.2s;
+}
+button:hover {
+  background-color: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+}
+button:focus, button:focus-visible {
+  outline: 2px solid var(--color-input-focus);
+  outline-offset: 2px;
+}
+input, select, textarea {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg-form);
+  color: var(--color-text-main);
+  transition: border 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-input-focus);
+  outline: none;
+}
+label {
+  color: var(--color-label);
+  font-weight: 500;
+}
+
+/* Notification styles */
+.toast-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+.toast-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+}
+.toast-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning);
+}
+.toast-info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  border: 1px solid var(--color-info);
+}
+
+hr, .divider {
+  border-color: var(--color-divider);
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark mode overrides */
+.dark {
+  --color-bg-main: #1a232b;
+  --color-bg-form: #232b34;
+  --color-border: #3a4a5a;
+  --color-link: #9ACBD0;
+  --color-link-visited: #48A6A7;
+  --color-link-active: #48A6A7;
+  --color-accent: #48A6A7;
+  --color-accent-dark: #006A71;
+  --color-divider: #3a4a5a;
+  --color-success: #48A6A7;
+  --color-success-bg: #17343a;
+  --color-error: #ff7f7f;
+  --color-error-bg: #362626;
+  --color-warning: #E2A534;
+  --color-warning-bg: #3a2a17;
+  --color-info: #9ACBD0;
+  --color-info-bg: #1a232b;
+  --color-label: #9ACBD0;
+  --color-text-main: #e6e6e6;
+  --color-input-focus: #48A6A7;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
