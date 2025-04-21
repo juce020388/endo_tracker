@@ -31,7 +31,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   }, [initial]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFields((f) => ({ ...f, [name]: value }));

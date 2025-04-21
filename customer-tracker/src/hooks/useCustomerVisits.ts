@@ -27,7 +27,7 @@ export function useCustomerVisits(initialVisits: CustomerVisit[] = []) {
 
   function updateVisit(id: string, updated: Partial<CustomerVisit>) {
     setVisits((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, ...updated } : v))
+      prev.map((v) => (v.id === id ? { ...v, ...updated } : v)),
     );
   }
 

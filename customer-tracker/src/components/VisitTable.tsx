@@ -153,7 +153,7 @@ const VisitTable: React.FC<VisitTableProps> = ({
                 <tr
                   key={visit.id}
                   className={
-                    visit.subscription ? "bg-yellow-100 dark:bg-yellow-900" : ""
+                    visit.subscription ? "bg-blue-100 dark:bg-blue-300" : ""
                   }
                 >
                   <td
@@ -175,7 +175,7 @@ const VisitTable: React.FC<VisitTableProps> = ({
                     className="px-2 py-1 border"
                     style={{ borderColor: "var(--color-border)" }}
                   >
-                    {visit.procedureType}
+                    {visit.procedureType.name}
                   </td>
                   <td
                     className="px-2 py-1 border"

@@ -11,7 +11,7 @@ export function getSunday(date: Date): Date {
   return new Date(
     monday.getFullYear(),
     monday.getMonth(),
-    monday.getDate() + 6
+    monday.getDate() + 6,
   );
 }
 
@@ -19,7 +19,7 @@ export function isDateInWeek(dateStr: string, weekStart: Date): boolean {
   const weekEnd = new Date(
     weekStart.getFullYear(),
     weekStart.getMonth(),
-    weekStart.getDate() + 6
+    weekStart.getDate() + 6,
   );
   const formattedDate = formatDateYYYYMMDD(new Date(dateStr));
   const formattedWeekStart = formatDateYYYYMMDD(weekStart);
@@ -40,7 +40,7 @@ export function formatDateYYYYMMDD(date: Date) {
 
 export function formatDateYYYYDDMMWithHHmm(
   date: Date,
-  withTSeparator: boolean
+  withTSeparator: boolean,
 ) {
   const year = date.getFullYear();
   const day = String(date.getDate()).padStart(2, "0");

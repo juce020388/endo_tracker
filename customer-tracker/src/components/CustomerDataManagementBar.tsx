@@ -1,5 +1,6 @@
 import React from "react";
-import { Customer } from "../types";
+import { Customer, Procedure } from "../types";
+import { fetchProcedureTypes } from "../supabase/procedureTypesApi.ts";
 
 const PROCEDURE_TYPES_KEY = "procedureTypes";
 const VISITS_KEY = "customerVisits";
@@ -12,7 +13,7 @@ interface Props {
 const CustomerDataManagementBar: React.FC<Props> = ({ customers }) => {
   // Export JSON
   const handleExportJSON = () => {
-    let procedureTypes: any[] = [];
+    let procedureTypes: Procedure[] = [];
     try {
       const raw = localStorage.getItem(PROCEDURE_TYPES_KEY);
       if (raw) {
@@ -34,10 +35,10 @@ const CustomerDataManagementBar: React.FC<Props> = ({ customers }) => {
             procedureTypes: procedureTypes || [],
           },
           null,
-          2
+          2,
         ),
       ],
-      { type: "application/json" }
+      { type: "application/json" },
     );
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

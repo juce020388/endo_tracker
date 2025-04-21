@@ -1,6 +1,5 @@
 import React from "react";
 
-// Generates a vibrant and visually distinct color based on a string (e.g., name or id)
 function stringToColor(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -13,7 +12,6 @@ function stringToColor(str: string): string {
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
-// Optionally, generate a secondary color for border/shadow (darker shade)
 function stringToBorderColor(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {

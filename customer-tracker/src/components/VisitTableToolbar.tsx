@@ -36,10 +36,22 @@ const VisitTableToolbar: React.FC<VisitTableToolbarProps> = ({
   customers,
 }) => {
   return (
-    <div className="mb-4 bg-sky/10 p-3 rounded border border-sky">
+    <div
+      className="mb-4 bg-sky/10 p-3 rounded border border-gray-200"
+      style={{
+        borderColor: "var(--color-border)",
+        background: "var(--color-bg-form)",
+      }}
+    >
       {/* Row 1: Search Input */}
       <div className="mb-2">
-        <label className="flex items-center w-full bg-white dark:bg-slate-800 border rounded px-2 py-1 focus-within:ring-2 focus-within:ring-accent">
+        <label
+          className="flex items-center w-full bg-white dark:bg-slate-500 border border-gray-200 px-2 py-1 focus-within:ring-2 focus-within:ring-accent"
+          style={{
+            borderColor: "var(--color-border)",
+            background: "var(--color-accent)",
+          }}
+        >
           <span className="mr-2 text-accent" aria-hidden>
             🔍
           </span>
@@ -54,24 +66,27 @@ const VisitTableToolbar: React.FC<VisitTableToolbarProps> = ({
         </label>
       </div>
       {/* Row 2: Filters in grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-1 gap-y-1 mb-1">
-        {/* Customer Filter */}
-        <label className="flex items-center gap-1">
-          <span className="text-xs font-semibold">Customer</span>
-          <select
-            value={customerId}
-            onChange={(e) => onCustomerIdChange(e.target.value)}
-            className="bg-white dark:bg-slate-800 border rounded px-2 py-1 text-sm"
-          >
-            <option value="">All</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-                {c.phone ? ` (${c.phone})` : ""}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-x-1 gap-y-1 mb-1">
+        <div className="col-span-2">
+          {/* Customer Filter */}
+          <label className="flex items-center gap-1">
+            <span className="text-xs font-semibold">Customer</span>
+            <select
+              value={customerId}
+              onChange={(e) => onCustomerIdChange(e.target.value)}
+              className="bg-white dark:bg-slate-800 border rounded px-2 py-1 text-sm"
+            >
+              <option value="">All</option>
+              {customers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                  {c.phone ? ` (${c.phone})` : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
         <label className="flex items-center gap-1">
           <span className="text-xs font-semibold">Procedure</span>
           <select

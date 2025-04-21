@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { CustomerVisit, Customer } from "../types";
+import { CustomerVisit, Customer, Procedure } from "../types";
 
 interface VisitFormProps {
   initial?: Partial<CustomerVisit>;
@@ -13,7 +13,7 @@ interface VisitFormProps {
 const defaultForm: Omit<CustomerVisit, "id"> = {
   name: "",
   date: "",
-  procedureType: "Endospera",
+  procedureType: new Procedure("Unknown"),
   price: 0,
   paidBy: "",
   changeFromPocket: 0,
@@ -22,10 +22,7 @@ const defaultForm: Omit<CustomerVisit, "id"> = {
   notes: "",
 };
 
-type ProcedureTypeObj = { name: string; defaultPrice?: number };
-const LOCAL_STORAGE_KEY = "procedureTypes";
-
-
+// const LOCAL_STORAGE_KEY = "procedureTypes";
 
 const VisitForm: React.FC<VisitFormProps> = ({
   initial,
@@ -33,6 +30,8 @@ const VisitForm: React.FC<VisitFormProps> = ({
   onCancel,
   customers,
 }) => {
+  // Procedure types from Supabase (must be declared before any useEffect that uses it)
+  const [procedureTypes, setProcedureTypes] = useState<Procedure[]>([]);
   // Track if user has manually edited price
   const [userPriceEdited, setUserPriceEdited] = useState(false);
   const [form, setForm] = useState<Omit<CustomerVisit, "id">>(() => {
@@ -61,15 +60,50 @@ const VisitForm: React.FC<VisitFormProps> = ({
     // eslint-disable-next-line
   }, []);
 
+  // On mount, after procedureTypes are loaded, set price to default if adding new
+  useEffect(() => {
+    if (!initial || !initial.id) {
+      console.log("Form.procedure", form.procedureType);
+      const selected = procedureTypes.find(
+        (pt) => pt.name === form.procedureType,
+      );
+      console.log("On Edit procedure price:", procedureTypes);
+      if (
+        selected &&
+        typeof selected.defaultPrice === "number" &&
+        !isNaN(selected.defaultPrice) &&
+        (!form.price || form.price === 0)
+      ) {
+        setForm((prev) => ({
+          ...prev,
+          price: selected.defaultPrice as number,
+        }));
+        setUserPriceEdited(false);
+      }
+    }
+    // eslint-disable-next-line
+  }, [procedureTypes]);
+
+  // Auto-fill name when editing if customerId is set but name is missing
+  useEffect(() => {
+    if (form.customerId && !form.name) {
+      const selectedCustomer = customers.find((c) => c.id === form.customerId);
+      if (selectedCustomer) {
+        setForm((prev) => ({ ...prev, name: selectedCustomer.name }));
+      }
+    }
+    // eslint-disable-next-line
+  }, [form.customerId, customers]);
+
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Procedure types from Supabase
-  const [procedureTypes, setProcedureTypes] = useState<ProcedureTypeObj[]>([]);
   useEffect(() => {
     async function loadProcedureTypes() {
       try {
-        const { fetchProcedureTypes } = await import('../supabase/procedureTypesApi');
+        const { fetchProcedureTypes } = await import(
+          "../supabase/procedureTypesApi"
+        );
         const types = await fetchProcedureTypes();
         setProcedureTypes(types);
       } catch (e) {
@@ -81,21 +115,21 @@ const VisitForm: React.FC<VisitFormProps> = ({
   // Track last selected procedureType to avoid unnecessary price changes
   const lastProcedureType = useRef(form.procedureType);
 
-  // Watch for localStorage changes (in case ProcedureTypes page is open in another tab)
-  useEffect(() => {
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === LOCAL_STORAGE_KEY) {
-        setProcedureTypes(getProcedureTypes());
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+  // // Watch for localStorage changes (in case ProcedureTypes page is open in another tab)
+  // useEffect(() => {
+  //   const handleStorage = (e: StorageEvent) => {
+  //     if (e.key === LOCAL_STORAGE_KEY) {
+  //       setProcedureTypes(getProcedureTypes());
+  //     }
+  //   };
+  //   window.addEventListener("storage", handleStorage);
+  //   return () => window.removeEventListener("storage", handleStorage);
+  // }, []);
 
   // On mount: set price if empty/zero and default price exists
   useEffect(() => {
     const selected = procedureTypes.find(
-      (pt) => pt.name === form.procedureType
+      (pt) => pt.name === form.procedureType,
     );
     if (
       selected &&
@@ -109,28 +143,27 @@ const VisitForm: React.FC<VisitFormProps> = ({
     // eslint-disable-next-line
   }, []);
 
-  // When procedureType changes, update price unless user has manually edited
+  // When procedureType or procedureTypes changes, update price unless user has manually edited
   useEffect(() => {
-    if (form.procedureType !== lastProcedureType.current) {
-      const selected = procedureTypes.find(
-        (pt) => pt.name === form.procedureType
-      );
-      if (
-        selected &&
-        typeof selected.defaultPrice === "number" &&
-        !isNaN(selected.defaultPrice) &&
-        !userPriceEdited
-      ) {
-        setForm((prev) => ({
-          ...prev,
-          price: selected.defaultPrice as number,
-        }));
-      }
-      lastProcedureType.current = form.procedureType;
-      setUserPriceEdited(false); // reset manual edit flag on type change
+    const selected = procedureTypes.find(
+      (pt) => pt.name === form.procedureType,
+    );
+    if (
+      selected &&
+      typeof selected.defaultPrice === "number" &&
+      !isNaN(selected.defaultPrice) &&
+      !userPriceEdited &&
+      form.price !== selected.defaultPrice
+    ) {
+      setForm((prev) => ({
+        ...prev,
+        price: selected.defaultPrice as number,
+      }));
     }
+    lastProcedureType.current = form.procedureType;
+    // Don't reset userPriceEdited here, only on manual change
     // eslint-disable-next-line
-  }, [form.procedureType, procedureTypes]);
+  }, [procedureTypes, form.procedureType]);
 
   function validate(fields = form) {
     const errors: Record<string, string> = {};
@@ -165,7 +198,7 @@ const VisitForm: React.FC<VisitFormProps> = ({
   }
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
     if (e.target.name === "price") {
       setUserPriceEdited(true);
@@ -194,8 +227,8 @@ const VisitForm: React.FC<VisitFormProps> = ({
           type === "checkbox" && e.target instanceof HTMLInputElement
             ? e.target.checked
             : type === "number"
-            ? Number(value)
-            : value,
+              ? Number(value)
+              : value,
       };
       setFormErrors((prevErrors) => {
         const next = { ...prevErrors };
@@ -223,7 +256,7 @@ const VisitForm: React.FC<VisitFormProps> = ({
   }
 
   function handleBlur(
-    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
     const { name } = e.target;
     const errors = validate({
@@ -266,7 +299,7 @@ const VisitForm: React.FC<VisitFormProps> = ({
           name="customerId"
           value={form.customerId || ""}
           onChange={handleChange}
-          onBlur={handleBlur as any}
+          onBlur={handleBlur as never}
           required
           className={`border p-2 rounded focus:ring-2 focus:ring-teal ${
             formErrors.customerId ? "border-red-500" : "border-sky"
@@ -309,7 +342,7 @@ const VisitForm: React.FC<VisitFormProps> = ({
           <DatePicker
             selected={dateValue || new Date()}
             onChange={handleDateChange}
-            onBlur={handleBlur as any}
+            onBlur={handleBlur as never}
             showTimeInput={true}
             timeInputLabel="Time:"
             timeFormat="HH:mm"
@@ -330,7 +363,7 @@ const VisitForm: React.FC<VisitFormProps> = ({
           Procedure Type
           <select
             name="procedureType"
-            value={form.procedureType}
+            value={form.procedureType.name}
             onChange={handleChange}
             onBlur={handleBlur}
             className={`border p-2 rounded focus:ring-2 focus:ring-teal ${

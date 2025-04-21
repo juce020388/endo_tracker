@@ -1,43 +1,29 @@
-import React from "react";
-import { CustomerVisit, ProcedureType } from "../types";
+import React, { useEffect, useState } from "react";
+import { CustomerVisit, Procedure } from "../types";
+import { fetchProcedureTypes } from "../supabase/procedureTypesApi";
 
 interface WeeklySummaryTableProps {
   visits: CustomerVisit[];
 }
 
 type Summary = {
-  procedureType: ProcedureType | "Total";
+  procedureType: Procedure;
   moneyInEnvelope: number;
   myPay: number;
   change: number;
   subscriptions: number;
 };
 
-type ProcedureTypeObj = { name: string; defaultPrice?: number };
-const LOCAL_STORAGE_KEY = "procedureTypes";
-
-function getProcedureTypes(): ProcedureTypeObj[] {
-  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && typeof parsed[0] === "string") {
-        return parsed.map((name: string) => ({ name }));
-      }
-      return parsed;
-    } catch {
-      return [{ name: "Endospera" }, { name: "Eco Lifting" }];
-    }
-  }
-  return [{ name: "Endospera" }, { name: "Eco Lifting" }];
-}
-
-function computeSummary(visits: CustomerVisit[]): Summary[] {
-  const types = getProcedureTypes().map((pt) => pt.name);
-  return types.map((procedureType) => {
-    const filtered = visits.filter((v) => v.procedureType === procedureType);
+function computeSummary(
+  visits: CustomerVisit[],
+  procedureTypes: Procedure[],
+): Summary[] {
+  return procedureTypes.map((procedure) => {
+    const filtered = visits.filter(
+      (v) => v.procedureType?.name === procedure.name,
+    );
     return {
-      procedureType: procedureType as ProcedureType,
+      procedureType: procedure,
       moneyInEnvelope: filtered.reduce((sum, v) => sum + v.price, 0),
       myPay: filtered.reduce((sum, v) => sum + v.myPay, 0),
       change: filtered.reduce((sum, v) => sum + v.changeFromPocket, 0),
@@ -47,31 +33,62 @@ function computeSummary(visits: CustomerVisit[]): Summary[] {
 }
 
 // Helper to get defaultPrice for a procedure type
-function getDefaultPriceForType(name: string): number | undefined {
-  const pt = getProcedureTypes().find((pt) => pt.name === name);
+function getDefaultPriceForType(
+  name: string,
+  procedureTypes: Procedure[],
+): number | undefined {
+  const pt = procedureTypes.find((pt) => pt.name === name);
   return pt && typeof pt.defaultPrice === "number"
     ? pt.defaultPrice
     : undefined;
 }
 
 const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
-  const summary = computeSummary(visits);
+  const [procedureTypes, setProcedureTypes] = useState<Procedure[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    fetchProcedureTypes()
+      .then((types) => {
+        if (mounted) {
+          setProcedureTypes(types);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (mounted) {
+          setError("Failed to fetch procedure types");
+          setLoading(false);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (loading) return <div>Loading summary...</div>;
+  if (error) return <div className="text-red-600">{error}</div>;
+
+  const summary = computeSummary(visits, procedureTypes);
   // Compute total row
   const total = summary.reduce(
     (acc, row) => ({
-      procedureType: "Total" as ProcedureType,
+      procedureType: new Procedure("Total"),
       moneyInEnvelope: acc.moneyInEnvelope + row.moneyInEnvelope,
       myPay: acc.myPay + row.myPay,
       change: acc.change + row.change,
       subscriptions: acc.subscriptions + row.subscriptions,
     }),
     {
-      procedureType: "Total" as ProcedureType,
+      procedureType: new Procedure("Total"),
       moneyInEnvelope: 0,
       myPay: 0,
       change: 0,
       subscriptions: 0,
-    }
+    },
   );
 
   // Find min/max for highlighting
@@ -175,7 +192,7 @@ const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
         <tbody>
           {summary.map((row, i) => (
             <tr
-              key={row.procedureType}
+              key={row.procedureType.name}
               className={
                 i % 2 === 0
                   ? "bg-white/80 hover:bg-sky-50 transition"
@@ -189,13 +206,13 @@ const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
                 <span role="img" aria-label="procedure" title="Procedure type">
                   🛠️
                 </span>{" "}
-                {row.procedureType}
+                {row.procedureType.name}
               </td>
               <td
                 className="px-2 py-1 border text-right"
                 style={{ borderColor: "var(--color-border)" }}
               >
-                {row.procedureType !== "Total" ? (
+                {row.procedureType.name !== "Total" ? (
                   <span>
                     <span
                       role="img"
@@ -204,9 +221,14 @@ const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
                     >
                       🏷️
                     </span>{" "}
-                    {typeof getDefaultPriceForType(row.procedureType) ===
-                    "number" ? (
-                      getDefaultPriceForType(row.procedureType)
+                    {typeof getDefaultPriceForType(
+                      row.procedureType.name,
+                      procedureTypes,
+                    ) === "number" ? (
+                      getDefaultPriceForType(
+                        row.procedureType.name,
+                        procedureTypes,
+                      )
                     ) : (
                       <span className="text-gray-400">-</span>
                     )}
@@ -220,8 +242,8 @@ const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
                   row.moneyInEnvelope === max(moneyVals)
                     ? "bg-green-200 font-bold"
                     : row.moneyInEnvelope === min(moneyVals)
-                    ? "bg-red-100"
-                    : ""
+                      ? "bg-red-100"
+                      : ""
                 }`}
                 style={{ borderColor: "var(--color-border)" }}
               >
@@ -239,8 +261,8 @@ const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
                   row.myPay === max(myPayVals)
                     ? "bg-blue-200 font-bold"
                     : row.myPay === min(myPayVals)
-                    ? "bg-red-100"
-                    : ""
+                      ? "bg-red-100"
+                      : ""
                 }`}
                 style={{ borderColor: "var(--color-border)" }}
               >
@@ -258,8 +280,8 @@ const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
                   row.change === max(changeVals)
                     ? "bg-yellow-200 font-bold"
                     : row.change === min(changeVals)
-                    ? "bg-red-100"
-                    : ""
+                      ? "bg-red-100"
+                      : ""
                 }`}
                 style={{ borderColor: "var(--color-border)" }}
               >
@@ -277,8 +299,8 @@ const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
                   row.subscriptions === max(subsVals) && row.subscriptions > 0
                     ? "bg-pink-200 font-bold"
                     : row.subscriptions === min(subsVals)
-                    ? "bg-red-100"
-                    : ""
+                      ? "bg-red-100"
+                      : ""
                 }`}
                 style={{ borderColor: "var(--color-border)" }}
               >
@@ -305,7 +327,7 @@ const WeeklySummaryTable: React.FC<WeeklySummaryTableProps> = ({ visits }) => {
               className="px-2 py-1 border"
               style={{ borderColor: "var(--color-border)" }}
             >
-              Total
+              {total.procedureType.name}
             </td>
             <td
               className="px-2 py-1 border"

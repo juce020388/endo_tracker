@@ -4,7 +4,6 @@ import CustomerForm from "../components/CustomerForm";
 import CustomerDataManagementBar from "../components/CustomerDataManagementBar";
 import { supabase } from "../supabaseClient";
 
-// Supabase CRUD functions
 async function fetchCustomers(): Promise<Customer[]> {
   const { data, error } = await supabase
     .from("customers")
@@ -17,7 +16,7 @@ async function fetchCustomers(): Promise<Customer[]> {
 }
 
 async function addCustomer(
-  fields: Omit<Customer, "id">
+  fields: Omit<Customer, "id">,
 ): Promise<Customer | null> {
   const { data, error } = await supabase
     .from("customers")
@@ -33,7 +32,7 @@ async function addCustomer(
 
 async function updateCustomer(
   id: string,
-  fields: Omit<Customer, "id">
+  fields: Omit<Customer, "id">,
 ): Promise<Customer | null> {
   const { data, error } = await supabase
     .from("customers")
@@ -64,7 +63,7 @@ const Customers: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [expandedCustomerId, setExpandedCustomerId] = useState<string | null>(
-    null
+    null,
   );
   const [visits, setVisits] = useState<CustomerVisit[]>([]);
 
@@ -77,15 +76,21 @@ const Customers: React.FC = () => {
     });
   }, []);
 
-  // TODO: Integrate visits with Supabase if needed
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("customerVisits");
-      if (!raw) return;
-      setVisits(JSON.parse(raw));
-    } catch {
-      setVisits([]);
+    async function loadCustomerVisits() {
+      try {
+        const { fetchCustomerVisits } = await import(
+          "../supabase/customerVisitsApi.ts"
+        );
+        const data = await fetchCustomerVisits();
+        console.log("Customer visit data", data);
+        setVisits(data);
+      } catch (e) {
+        console.log("Cannot load customer visits:", e);
+        setVisits([]);
+      }
     }
+    loadCustomerVisits();
   }, []);
 
   const filtered = customers.filter(
@@ -93,7 +98,7 @@ const Customers: React.FC = () => {
       !search ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       (c.phone && c.phone.includes(search)) ||
-      (c.email && c.email.toLowerCase().includes(search.toLowerCase()))
+      (c.email && c.email.toLowerCase().includes(search.toLowerCase())),
   );
 
   const handleAdd = () => {
@@ -111,7 +116,7 @@ const Customers: React.FC = () => {
       const updated = await updateCustomer(editing.id, fields);
       if (updated) {
         setCustomers((cs) =>
-          cs.map((c) => (c.id === editing.id ? updated : c))
+          cs.map((c) => (c.id === editing.id ? updated : c)),
         );
       }
     } else {
@@ -137,244 +142,410 @@ const Customers: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <CustomerDataManagementBar
-        customers={customers}
-      />
-      <h1 className="text-2xl font-bold mb-4">Customers</h1>
-      <div className="mb-4 flex gap-2 items-center">
-        <input
-          type="text"
-          placeholder="Search customers..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border rounded px-2 py-1 w-full md:w-64"
-        />
-        <button
-          className="bg-accent text-white px-3 py-1 rounded"
-          onClick={handleAdd}
-        >
-          + Add Customer
-        </button>
-      </div>
-      {/* Loading indicator */}
-      {loading && (
-        <div className="mb-8 flex flex-col items-center justify-center animate-fade-in">
-          <div className="relative mb-2">
-            <div className="w-14 h-14 border-4 border-teal-300 border-t-teal-600 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
+    <div className="max-w-6xl mx-auto p-4  min-h-screen bg-white rounded-lg shadow-lg">
+      <CustomerDataManagementBar customers={customers} />
+
+      <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <h2 className="text-2xl font-bold mb-6 text-teal-700 border-b pb-3">
+          Customer Management
+        </h2>
+
+        <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
+          <div className="relative w-full md:w-64">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <svg
-                className="h-6 w-6 text-teal-600 opacity-70"
+                className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
                 fill="none"
-                viewBox="0 0 24 24"
+                viewBox="0 0 20 20"
               >
                 <path
                   stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M12 4v4m0 8v4m8-8h-4M4 12H0m17.657-5.657l-2.828 2.828m-8.486 8.486l-2.828 2.828m14.142 0l-2.828-2.828m-8.486-8.486L4.343 6.343"
+                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
                 />
               </svg>
             </div>
+            <input
+              type="text"
+              placeholder="Search customers..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="block w-full pl-10 p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-accent focus:border-accent"
+            />
           </div>
-          <span className="text-teal-700 font-medium text-base tracking-wide">
-            Loading customers...
-          </span>
+          <button
+            className="bg-accent hover:bg-accent/90 transition-colors text-white px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-md"
+            onClick={handleAdd}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Add Customer
+          </button>
         </div>
-      )}
-      {!loading && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm border rounded">
-            <thead>
-              <tr className="bg-sky/10">
-                <th className="px-2 py-1 text-left">Name</th>
-                <th className="px-2 py-1 text-left">Phone</th>
-                <th className="px-2 py-1 text-left">Email</th>
-                <th className="px-2 py-1 text-left">Notes</th>
-                <th className="px-2 py-1 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
+
+        {/* Loading indicator */}
+        {loading && (
+          <div className="mb-8 flex flex-col items-center justify-center animate-fade-in py-16">
+            <div className="relative mb-4">
+              <div className="w-16 h-16 border-4 border-accent/30 border-t-accent rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg
+                  className="h-8 w-8 text-accent opacity-70"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    d="M12 4v4m0 8v4m8-8h-4M4 12H0m17.657-5.657l-2.828 2.828m-8.486 8.486l-2.828 2.828m14.142 0l-2.828-2.828m-8.486-8.486L4.343 6.343"
+                  />
+                </svg>
+              </div>
+            </div>
+            <span className="text-accent font-medium text-lg tracking-wide">
+              Loading customers...
+            </span>
+          </div>
+        )}
+
+        {!loading && (
+          <div className="overflow-x-auto rounded-lg shadow-md">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <tr>
-                  <td colSpan={5} className="text-center py-4 text-gray-500">
-                    No customers found.
-                  </td>
+                  <th className="text-lg font-semibold mb-3 text-gray-700">
+                    Name
+                  </th>
+                  <th className="text-lg font-semibold mb-3 text-gray-700">
+                    Phone
+                  </th>
+                  <th className="text-lg font-semibold mb-3 text-gray-700">
+                    Email
+                  </th>
+                  <th className="text-lg font-semibold mb-3 text-gray-700">
+                    Notes
+                  </th>
+                  <th className="text-lg font-semibold mb-3 text-gray-700">
+                    Actions
+                  </th>
                 </tr>
-              ) : (
-                filtered.map((c) => (
-                  <React.Fragment key={c.id}>
-                    <tr className="border-t">
-                      <td className="px-2 py-1">{c.name}</td>
-                      <td className="px-2 py-1">{c.phone || "-"}</td>
-                      <td className="px-2 py-1">{c.email || "-"}</td>
-                      <td className="px-2 py-1">{c.notes || "-"}</td>
-                      <td className="px-2 py-1">
-                        <div className="flex flex-row gap-2 items-center">
-                          <button
-                            className="text-blue-600 px-1"
-                            onClick={() => handleEdit(c)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="text-red-600 px-1"
-                            onClick={() => handleDelete(c.id)}
-                          >
-                            Delete
-                          </button>
-                          <button
-                            className="text-accent px-1 underline text-xs"
-                            onClick={() =>
-                              setExpandedCustomerId(
-                                expandedCustomerId === c.id ? null : c.id
-                              )
-                            }
-                          >
-                            {expandedCustomerId === c.id
-                              ? "Hide History"
-                              : "Show History"}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    {expandedCustomerId === c.id && (
+              </thead>
+              <tbody className="bg-white  divide-y divide-gray-200 dark:divide-gray-700">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="text-center py-8 text-gray-500 dark:text-gray-400 font-medium"
+                    >
+                      No customers found.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((c) => (
+                    <React.Fragment key={c.id}>
                       <tr>
-                        <td colSpan={5} className="p-0">
-                          <div className="rounded-lg border-2 border-accent shadow-lg bg-white dark:bg-slate-900 my-2 p-4">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="inline-block rounded-full bg-accent text-white w-8 h-8 flex items-center justify-center font-bold text-lg">
-                                {c.name ? c.name[0].toUpperCase() : "?"}
-                              </span>
-                              <span className="font-semibold text-accent text-lg">
-                                {c.name}
-                              </span>
-                            </div>
-                            <div className="overflow-x-auto">
-                              <table className="min-w-full text-xs border rounded bg-white dark:bg-slate-800">
-                                <thead>
-                                  <tr>
-                                    <th
-                                      className="px-2 py-1 border-b"
-                                      title="Date of visit"
-                                    >
-                                      Date
-                                    </th>
-                                    <th
-                                      className="px-2 py-1 border-b"
-                                      title="Procedure type"
-                                    >
-                                      Procedure
-                                    </th>
-                                    <th
-                                      className="px-2 py-1 border-b"
-                                      title="Visit price"
-                                    >
-                                      Price
-                                    </th>
-                                    <th
-                                      className="px-2 py-1 border-b"
-                                      title="Your pay for this visit"
-                                    >
-                                      My Pay
-                                    </th>
-                                    <th
-                                      className="px-2 py-1 border-b"
-                                      title="Change from pocket"
-                                    >
-                                      Change
-                                    </th>
-                                    <th
-                                      className="px-2 py-1 border-b"
-                                      title="Subscription"
-                                    >
-                                      Sub
-                                    </th>
-                                    <th
-                                      className="px-2 py-1 border-b"
-                                      title="Notes"
-                                    >
-                                      Notes
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {visits.filter((v) => v.customerId === c.id)
-                                    .length === 0 ? (
-                                    <tr>
-                                      <td
-                                        colSpan={7}
-                                        className="text-xs text-gray-400 text-center"
-                                      >
-                                        No visits for this customer.
-                                      </td>
-                                    </tr>
-                                  ) : (
-                                    visits
-                                      .filter((v) => v.customerId === c.id)
-                                      .map((v) => (
-                                        <tr
-                                          key={v.id}
-                                          className="odd:bg-sky-100 even:bg-white dark:odd:bg-slate-900 dark:even:bg-slate-800 hover:bg-accent/10 transition-colors"
-                                        >
-                                          <td className="px-2 py-1">
-                                            {v.date.slice(0, 10)}
-                                          </td>
-                                          <td className="px-2 py-1">
-                                            {v.procedureType}
-                                          </td>
-                                          <td className="px-2 py-1">
-                                            {v.price} {v.paidBy}
-                                          </td>
-                                          <td className="px-2 py-1">
-                                            {typeof v.myPay === "number"
-                                              ? v.myPay
-                                              : "-"}
-                                          </td>
-                                          <td className="px-2 py-1">
-                                            {typeof v.changeFromPocket ===
-                                            "number"
-                                              ? v.changeFromPocket
-                                              : "-"}
-                                          </td>
-                                          <td className="px-2 py-1 text-center">
-                                            {v.subscription ? (
-                                              <span
-                                                role="img"
-                                                aria-label="subscription"
-                                                title="Subscription"
-                                              >
-                                                ⭐
-                                              </span>
-                                            ) : (
-                                              "-"
-                                            )}
-                                          </td>
-                                          <td className="px-2 py-1">
-                                            {v.notes || "-"}
-                                          </td>
-                                        </tr>
-                                      ))
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                          {c.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {c.phone || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {c.email || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                          {c.notes || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex flex-row gap-3 items-center">
+                            <button
+                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                              onClick={() => handleEdit(c)}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                />
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium flex items-center gap-1"
+                              onClick={() => handleDelete(c.id)}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                              Delete
+                            </button>
+                            <button
+                              className="text-accent hover:text-accent/80 dark:text-accent dark:hover:text-accent/90 font-medium flex items-center gap-1"
+                              onClick={() =>
+                                setExpandedCustomerId(
+                                  expandedCustomerId === c.id ? null : c.id,
+                                )
+                              }
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                {expandedCustomerId === c.id ? (
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M5 15l7-7 7 7"
+                                  />
+                                ) : (
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M19 9l-7 7-7-7"
+                                  />
+                                )}
+                              </svg>
+                              {expandedCustomerId === c.id
+                                ? "Hide History"
+                                : "Show History"}
+                            </button>
                           </div>
                         </td>
                       </tr>
-                    )}
-                  </React.Fragment>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+                      {expandedCustomerId === c.id && (
+                        <tr>
+                          <td colSpan={5} className="p-0 ">
+                            <div className="rounded-lg border border-gray-200 shadow-lg bg-white m-4 p-6">
+                              <div className="flex items-center gap-4 mb-4">
+                                <button className="rounded-full text-white w-10 h-10 flex items-center justify-center text-xl shadow-md">
+                                  {c.name ? c.name[0].toUpperCase() : "?"}
+                                </button>
+                                <div>
+                                  <span className="font-semibold text-accent text-xl">
+                                    {c.name}
+                                  </span>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {
+                                      visits.filter(
+                                        (v) => v.customerId === c.id,
+                                      ).length
+                                    }{" "}
+                                    visit(s)
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="overflow-x-auto rounded-lg shadow">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                  <thead className="bg-gray-100 dark:bg-slate-800">
+                                    <tr>
+                                      <th
+                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        title="Date of visit"
+                                      >
+                                        Date
+                                      </th>
+                                      <th
+                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        title="Procedure type"
+                                      >
+                                        Procedure
+                                      </th>
+                                      <th
+                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        title="Visit price"
+                                      >
+                                        Price
+                                      </th>
+                                      <th
+                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        title="Your pay for this visit"
+                                      >
+                                        My Pay
+                                      </th>
+                                      <th
+                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        title="Change from pocket"
+                                      >
+                                        Change
+                                      </th>
+                                      <th
+                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        title="Subscription"
+                                      >
+                                        Sub
+                                      </th>
+                                      <th
+                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                                        title="Notes"
+                                      >
+                                        Notes
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
+                                    {visits.filter((v) => v.customerId === c.id)
+                                      .length === 0 ? (
+                                      <tr>
+                                        <td
+                                          colSpan={7}
+                                          className="px-4 py-6 text-sm text-gray-500 dark:text-gray-400 text-center"
+                                        >
+                                          No visits for this customer.
+                                        </td>
+                                      </tr>
+                                    ) : (
+                                      visits
+                                        .filter((v) => v.customerId === c.id)
+                                        .map((v) => (
+                                          <tr
+                                            key={v.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                                          >
+                                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                              {v.date.slice(0, 10)}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-medium">
+                                              {v.procedureType.name}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                              <span className="font-medium">
+                                                {v.price}
+                                              </span>
+                                              <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
+                                                {v.paidBy}
+                                              </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                              {typeof v.myPay === "number" ? (
+                                                <span className="font-medium">
+                                                  {v.myPay}
+                                                </span>
+                                              ) : (
+                                                "-"
+                                              )}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                              {typeof v.changeFromPocket ===
+                                              "number" ? (
+                                                <span className="font-medium">
+                                                  {v.changeFromPocket}
+                                                </span>
+                                              ) : (
+                                                "-"
+                                              )}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-center">
+                                              {v.subscription ? (
+                                                <span className="text-yellow-500 dark:text-yellow-400">
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-5 w-5"
+                                                    viewBox="0 0 20 20"
+                                                    fill="currentColor"
+                                                  >
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                  </svg>
+                                                </span>
+                                              ) : (
+                                                <span className="text-gray-300 dark:text-gray-700">
+                                                  -
+                                                </span>
+                                              )}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                              {v.notes || "-"}
+                                            </td>
+                                          </tr>
+                                        ))
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {showForm && (
-        <CustomerForm
-          initial={editing || undefined}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+                {editing ? "Edit Customer" : "Add New Customer"}
+              </h2>
+              <button
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                onClick={handleCancel}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <CustomerForm
+              initial={editing || undefined}
+              onSave={handleSave}
+              onCancel={handleCancel}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

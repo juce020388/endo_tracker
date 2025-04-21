@@ -18,7 +18,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({
   const filteredVisits = React.useMemo(() => {
     if (!noteFilter.trim()) return visits;
     return visits.filter((v) =>
-      (v.notes || "").toLowerCase().includes(noteFilter.toLowerCase())
+      (v.notes || "").toLowerCase().includes(noteFilter.toLowerCase()),
     );
   }, [visits, noteFilter]);
 
@@ -129,7 +129,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({
                         className="odd:bg-sky-50 even:bg-white dark:odd:bg-slate-900 dark:even:bg-slate-800"
                       >
                         <td className="px-2 py-1">{v.date.slice(0, 10)}</td>
-                        <td className="px-2 py-1">{v.procedureType}</td>
+                        <td className="px-2 py-1">{v.procedureType?.name}</td>
                         <td className="px-2 py-1">
                           {v.price} {v.paidBy}
                         </td>
