@@ -107,8 +107,8 @@ const DataManagement: React.FC = () => {
             <h2 className="text-lg font-semibold">Export Data</h2>
           </div>
           <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">
-            Export all customer visits and customer data as a CSV file for
-            backup or migration.
+            Export all Customer visits, Procedure types, and Customers data as a
+            JSON file for backup or migration.
           </p>
           <DataManagementBar
             visits={customerVisits}
