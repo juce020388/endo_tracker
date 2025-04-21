@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const PlaceholderVisitTable: React.FC = () => (
   <div className="border rounded bg-white shadow p-4 mb-6">
@@ -20,7 +20,9 @@ const PlaceholderVisitTable: React.FC = () => (
       <tbody>
         <tr>
           <td className="px-2 py-1 border" colSpan={9}>
-            <span className="text-gray-400">No visits yet. Add your first record!</span>
+            <span className="text-gray-400">
+              No visits yet. Add your first record!
+            </span>
           </td>
         </tr>
       </tbody>

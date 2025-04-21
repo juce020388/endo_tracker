@@ -182,32 +182,6 @@ This document provides a comprehensive overview of the main UI components in the
 
 ---
 
-## FilePickerBar.tsx
-- **Purpose:** UI for selecting and importing/exporting files (JSON/CSV). Integrates with file system dialogs.
-- **Props:**
-  - `visits: CustomerVisit[]` – Current visits data.
-  - `setVisits: (visits: CustomerVisit[]) => void` – Setter for visits data.
-  - `defaultFilename?: string` – Default filename for saving (optional).
-- **Usage Example:**
-  ```tsx
-  <FilePickerBar visits={visits} setVisits={setVisits} />
-  ```
-- **Design Notes:**
-  - Uses File System Access API if available for direct save.
-  - Fallbacks to download for unsupported browsers.
-- **Advanced Details:**
-  - **Prop Table:**
-    | Prop Name | Type | Required | Description |
-    | --- | --- | --- | --- |
-    | visits | CustomerVisit[] | Yes | Current visits data. |
-    | setVisits | (visits: CustomerVisit[]) => void | Yes | Setter for visits data. |
-    | defaultFilename | string | No | Default filename for saving (optional). |
-  - **Event/Callback Explanations:** None
-  - **Advanced Usage Notes:** To customize the file picker bar, you can override the default styles by providing a custom `className` prop.
-  - **Tips for Customization:** Use the `className` prop to add custom styles to the file picker bar. For example, you can change the font size or add custom icons.
-
----
-
 ## UndoSnackbar.tsx
 - **Purpose:** Snackbar notification for undoing destructive actions (e.g., reset visits).
 - **Props:**

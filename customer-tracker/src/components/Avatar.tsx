@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 // Generates a vibrant and visually distinct color based on a string (e.g., name or id)
 function stringToColor(str: string): string {
@@ -31,19 +31,28 @@ interface AvatarProps {
   className?: string;
 }
 
-const Avatar: React.FC<AvatarProps> = ({ name, size = 40, className = '' }) => {
-  const initials = name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2) : '?';
-  const bgColor = stringToColor(name || '?');
-  const borderColor = stringToBorderColor(name || '?');
+const Avatar: React.FC<AvatarProps> = ({ name, size = 40, className = "" }) => {
+  const initials = name
+    ? name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
+  const bgColor = stringToColor(name || "?");
+  const borderColor = stringToBorderColor(name || "?");
   return (
     <span
       className={`inline-flex items-center justify-center rounded-full font-bold select-none ${className}`}
       style={{
-        width: size, height: size,
+        width: size,
+        height: size,
         background: bgColor,
-        color: '#fff',
+        color: "#fff",
         fontSize: size * 0.45,
-        minWidth: size, minHeight: size,
+        minWidth: size,
+        minHeight: size,
         border: `2.5px solid ${borderColor}`,
         boxShadow: `0 2px 8px 0 ${borderColor}33`,
       }}

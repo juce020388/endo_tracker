@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const PlaceholderSummaryTable: React.FC = () => (
   <div className="border rounded bg-white shadow p-4 mb-6">

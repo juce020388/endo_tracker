@@ -1,23 +1,23 @@
-import React from 'react';
+import React from "react";
 
 const toggleDarkMode = () => {
-  if (document.documentElement.classList.contains('dark')) {
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
+  if (document.documentElement.classList.contains("dark")) {
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
   } else {
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
+    document.documentElement.classList.add("dark");
+    localStorage.setItem("theme", "dark");
   }
 };
 
 export const initializeDarkMode = () => {
-  const saved = localStorage.getItem('theme');
-  if (saved === 'dark') {
-    document.documentElement.classList.add('dark');
-  } else if (saved === 'light') {
-    document.documentElement.classList.remove('dark');
-  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.classList.add('dark');
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark") {
+    document.documentElement.classList.add("dark");
+  } else if (saved === "light") {
+    document.documentElement.classList.remove("dark");
+  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.documentElement.classList.add("dark");
   }
 };
 

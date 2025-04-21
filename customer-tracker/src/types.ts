@@ -1,6 +1,12 @@
 // Core data structures for Customer Tracker System
 
-export type ProcedureType = 'Endospera' | 'Eco Lifting';
+export type ProcedureType = "Endospera" | "Eco Lifting";
+
+export interface Procedure {
+  name: string;
+  defaultPrice?: number;
+  description?: string;
+}
 
 export interface Customer {
   id: string;
@@ -11,6 +17,7 @@ export interface Customer {
 }
 
 export interface CustomerVisit {
+  notes?: string;
   id: string;
   // Legacy: name is kept for backward compatibility, prefer customerId going forward
   name?: string;

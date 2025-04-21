@@ -100,17 +100,17 @@ Data Management Improvements
 
 Customer Management Module
 
-[] - Create a separate section/view to manage individual customers
-[] - Store and manage customer contact information (name, phone, email)
+[x] - Create a separate section/view to manage individual customers
+[x] - Store and manage customer contact information (name, phone, email)
 [] - Data privacy controls and GDPR compliance features
-[] - View a history of visits for a specific customer
-[] - Add notes or specific preferences for each customer
+[x] - View a history of visits for a specific customer
+[x] - Add notes or specific preferences for each customer
 [] - Customer segmentation and tagging
 
 Procedure Type Management
 
-[] - Allow users to define and manage the list of procedure types
-[] - Associate default pricing or calculations with procedure types
+[x] - Allow users to define and manage the list of procedure types
+[x] - Associate default pricing or calculations with procedure types
 [] - Track procedure inventory and supplies
 [] - Procedure performance metrics (popularity, profitability)
 
