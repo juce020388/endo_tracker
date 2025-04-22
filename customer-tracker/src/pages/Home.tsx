@@ -75,7 +75,7 @@ const Home: React.FC = () => {
           v.procedureType.name.toLowerCase().includes(search.toLowerCase())) ||
         (v.paidBy && v.paidBy.toLowerCase().includes(search.toLowerCase()));
       const matchesProcedure =
-        !procedureType || v.procedureType === procedureType;
+        !procedureType || v.procedureType.name === procedureType;
       const matchesPaidBy = !paidBy || v.paidBy === paidBy;
       const matchesSubscription =
         !subscription ||

@@ -65,7 +65,7 @@ const VisitForm: React.FC<VisitFormProps> = ({
     if (!initial || !initial.id) {
       console.log("Form.procedure", form.procedureType);
       const selected = procedureTypes.find(
-        (pt) => pt.name === form.procedureType,
+        (pt) => pt.name === form.procedureType.name,
       );
       console.log("On Edit procedure price:", procedureTypes);
       if (
@@ -129,7 +129,7 @@ const VisitForm: React.FC<VisitFormProps> = ({
   // On mount: set price if empty/zero and default price exists
   useEffect(() => {
     const selected = procedureTypes.find(
-      (pt) => pt.name === form.procedureType,
+      (pt) => pt.name === form.procedureType.name,
     );
     if (
       selected &&
@@ -146,7 +146,7 @@ const VisitForm: React.FC<VisitFormProps> = ({
   // When procedureType or procedureTypes changes, update price unless user has manually edited
   useEffect(() => {
     const selected = procedureTypes.find(
-      (pt) => pt.name === form.procedureType,
+      (pt) => pt.name === form.procedureType.name,
     );
     if (
       selected &&

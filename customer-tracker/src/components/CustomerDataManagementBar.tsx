@@ -1,6 +1,5 @@
 import React from "react";
 import { Customer, Procedure } from "../types";
-import { fetchProcedureTypes } from "../supabase/procedureTypesApi.ts";
 
 const PROCEDURE_TYPES_KEY = "procedureTypes";
 const VISITS_KEY = "customerVisits";
